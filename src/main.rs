@@ -13,7 +13,8 @@ use clokwerk::{AsyncScheduler, TimeUnits};
 // Import week days and WeekDay
 use clokwerk::Interval::*;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use chrono::format::Numeric::Timestamp;
 use chrono::Weekday::Fri;
 
 use serenity::{
@@ -57,8 +58,13 @@ impl EventHandler for Handler {
                             e
                                 .title("New Code!")
                                 .description(format!("The new random code for this wipe is: ||{}||) \
-                                \nThis code was rated with a **{score:.prec$}/10** guess-ability score! \
-                                \n(To manually generate a new code /codegen!)", code = code, prec = 2 , score = score(code)))
+                                \nThis code was rated with a **{score:.prec$}/10** guess-ability score! "
+                                                     , code = code, prec = 2 , score = score(code)))
+                                .footer(|footer| {
+                                    footer
+                                        .text("Just in case you can always make a new code with /codegen!")
+                                })
+                                .timestamp(chrono::offset::Utc::now())
                         })
                     }).await.unwrap();
                     tokio::time::sleep(chrono::Duration::days(7).to_std().unwrap()).await;

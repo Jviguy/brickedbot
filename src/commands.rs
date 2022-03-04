@@ -5,6 +5,6 @@ use serenity::{
 };
 use serenity::utils::Colour;
 
-pub async fn link(ctx: &Context, command: &ApplicationCommandInteraction) -> Option<String> {
+pub async fn bulk_delete(ctx: &Context, command: &ApplicationCommandInteraction) -> Option<String> {
     None
 }
