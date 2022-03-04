@@ -76,14 +76,14 @@ impl EventHandler for Handler {
                                 .description("The IP Address of the server to query.")
                                 .required(true)
                                 .kind(ApplicationCommandOptionType::String)
-                                .create_sub_option(|suboption| {
-                                    suboption.kind(ApplicationCommandOptionType::Integer)
-                                        .name("port")
-                                        .description("The port of the server to query.")
-                                        .required(false)
-                                        .min_int_value(0)
-                                        .max_int_value(65535)
                                 })
+                        .create_option(|option| {
+                            option.kind(ApplicationCommandOptionType::Integer)
+                                .name("port")
+                                .description("The port of the server to query.")
+                                .required(false)
+                                .min_int_value(0)
+                                .max_int_value(65535)
                         })
                 })
                 .create_application_command(|command| {
