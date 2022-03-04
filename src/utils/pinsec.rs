@@ -17,7 +17,7 @@ pub fn score(pin: i32) -> f32 {
         let digit = *digit;
         println!("S: {}", s);
         // A 4 digit pin grows exponentially easier to guess if theres many repeated digits / in close distance
-        if digit-previous.abs() < 3 {
+        if (digit-previous).abs() < 2 {
             s *= 2.0;
             println!("MULTPLYING BY 2");
         }
