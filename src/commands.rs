@@ -6,10 +6,13 @@ use serenity::{
 };
 use serenity::model::guild::Guild;
 use serenity::model::id::RoleId;
+use serenity::model::Permissions;
 use serenity::utils::Colour;
 use crate::gen;
 
 pub async fn bulk_delete(ctx: &Context, command: &ApplicationCommandInteraction) -> Option<String> {
+    let guild = Guild::get(&ctx.http, command.guild_id.unwrap()).await.unwrap();
+
     None
 }
 

@@ -1,8 +1,10 @@
 extern crate core;
+extern crate core;
 
 mod commands;
 mod utils;
 
+use core::panicking::panic;
 use rand::Rng;
 use std::env;
 use std::sync::Arc;
@@ -32,7 +34,9 @@ use serenity::{
     },
     prelude::*,
 };
+use serenity::builder::CreateApplicationCommandPermissions;
 use serenity::model::id::ChannelId;
+use serenity::model::interactions::application_command::ApplicationCommandPermissionType;
 use serenity::utils::Color;
 use crate::utils::pinsec::{gen, score};
 
@@ -63,7 +67,7 @@ impl EventHandler for Handler {
 
     async fn ready(&self, ctx: Context, _: Ready) {
         let guild = GuildId(948931516031959062);
-        guild.set_application_commands(&ctx.http, |commands| {
+        let commands = guild.set_application_commands(&ctx.http, |commands| {
             commands
                 .create_application_command(|command| {
                     command.name("ping").description("A ping command.")
@@ -73,8 +77,31 @@ impl EventHandler for Handler {
                 })
                 .create_application_command(|command| {
                     command.name("gencode").description("Generates a random code for this week.")
+                        .default_permission(false)
+                })
+                .create_application_command(|command| {
+                    command.name("bulkdelete").description("Delete a heap of messages at once.")
+                        .default_permission(false)
                 })
         }).await.expect("Failed to make slash commands! (fuck me if this happens)");
+        guild.set_application_commands_permissions(&ctx.http, |permissions| {
+            for command in commands {
+                permissions.create_application_command(|appcommand| {
+                    appcommand.id(u64::from(command.id));
+                    appcommand.create_permissions(|permissions| {
+                        let id: u64 = match &*command.name {
+                            "ping" => 949397569031786496,
+                            "query" => 949397569031786496,
+                            "gencode" => 948938714464280587,
+                            "bulkdelete" => 948938714464280587,
+                            _ => panic!("UNKNOWN COMMAND"),
+                        };
+                        permissions.id(id).permission(true).kind(ApplicationCommandPermissionType::Role)
+                    })
+                });
+            }
+            permissions
+        }).await.expect("Failed to set permissions!");
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
