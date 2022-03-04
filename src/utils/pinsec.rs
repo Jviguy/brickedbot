@@ -26,7 +26,7 @@ pub fn score(pin: i32) -> f32 {
             s *= 2.0;
         }
         // The digit 0 adds complexity to codes based on its position in code prompts
-        else if digit == 0 {
+        else {
             s /= 2.0;
         }
         // Lower digits are guessed first in most 10 digit code prompts or if theres a repeat of this digit somewhere in the pin.

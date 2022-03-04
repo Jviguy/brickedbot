@@ -85,6 +85,7 @@ impl EventHandler for Handler {
                                 .name("amount")
                                 .description("The amount of messages to be deleted")
                                 .kind(ApplicationCommandOptionType::Integer)
+                                .required(true)
                                 .min_int_value(2)
                                 .max_int_value(100)
                         })
