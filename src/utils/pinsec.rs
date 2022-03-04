@@ -11,7 +11,7 @@ pub fn score(pin: i32) -> f32 {
         .take_while(|num| *num > 0)
         .map(|num| num % 10)
         .collect::<Vec<i32>>());
-    let previous = 10;
+    let mut previous = 10;
     for digit in digits {
         // A 4 digit pin grows exponentially easier to guess if theres many repeated digits
         if digit == previous {
@@ -25,6 +25,7 @@ pub fn score(pin: i32) -> f32 {
         if digit == 0 {
             s -= 0.5;
         }
+        previous = digit;
     }
     if s > 10.0 {
         s = 10.0;
