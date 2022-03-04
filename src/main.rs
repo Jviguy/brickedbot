@@ -66,7 +66,7 @@ impl EventHandler for Handler {
                                         .text("Just in case you can always make a new code with /codegen!")
                                 })
                                 .timestamp(chrono::offset::Utc::now())
-                                .thumbnail("https://www.clipartmax.com/png/middle/165-1655188_rust-honeycomb-by-vitalfyre-rust-logo-black-and-white.png")
+                                .thumbnail("https://cdn.discordapp.com/attachments/931763129136844820/949350466209337375/image-removebg-preview.png")
                                 .color(Color::ORANGE)
                         })
                     }).await.unwrap();
