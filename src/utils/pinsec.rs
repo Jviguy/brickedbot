@@ -1,8 +1,7 @@
-use std::process::id;
 use std::sync::Arc;
 use rand::Rng;
-use serenity::client::Context;
 use serenity::http::Http;
+use serenity::model::id::GuildId;
 use serenity::model::prelude::ChannelId;
 use serenity::utils::Color;
 
@@ -44,7 +43,13 @@ pub fn score(pin: i32) -> f32 {
 pub async fn gen(http: Arc<Http>) {
     let p = 10i32.pow(3);
     let code = rand::thread_rng().gen_range(p..10*p);
-    ChannelId(948933158122962974).send_message(http, |message| {
+    let mut channel = ChannelId(949424569834438707);
+    for (id,gc) in GuildId(948931516031959062).channels(http.clone()).await.unwrap() {
+        if gc.name == "code" {
+            channel = id;
+        }
+    };
+    channel.send_message(http, |message| {
         message.add_embed(|e| {
             e
                 .title("Weekly Code Refresh!")
