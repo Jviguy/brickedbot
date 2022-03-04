@@ -33,7 +33,7 @@ impl EventHandler for Handler {
                 .create_application_command(|command| {
                     command.name("query").description("Returns information on a given server.")
                 })
-        }).await.expect("Failed to make slash commands!");
+        }).await.expect("Failed to make slash commands! (fuck me if this happens)");
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
