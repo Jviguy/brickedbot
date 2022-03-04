@@ -58,9 +58,9 @@ impl EventHandler for Handler {
                         message.add_embed(|e| {
                             e
                                 .title("Weekly Code Refresh!")
-                                .description(format!("The new random code for this week is: ||{}||) \
-                                \nThis code was rated with a **{score:.prec$}/10** guess-ability score! "
-                                                     , code = code, prec = 2 , score = score(code)))
+                                .field("Code", format!("||{}||", code), false)
+                                .field("Guess-Ability", format!("This code was rated with a \
+                                 **{score:.prec$}/10** guess-ability score!", prec = 1, score=score(code)), false)
                                 .footer(|footer| {
                                     footer
                                         .text("Just in case, you can always make a new code with /codegen!")
