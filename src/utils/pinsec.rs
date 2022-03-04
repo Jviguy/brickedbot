@@ -19,9 +19,10 @@ pub fn score(pin: i32) -> f32 {
         if (digit-previous).abs() < 3 {
             s *= 2.0;
         }
+        println!("{:?}, {}", digits, digit);
         // Lower digits are guessed first in most 10 digit code prompts or if theres a repeat of this digit somewhere in the pin.
         if digit < 5 || digits.binary_search(&digit).unwrap() != idx {
-            s += 0.2;
+            s += 0.5;
         }
         // The digit 0 adds complexity to codes based on its position in code prompts
         if digit == 0 {
