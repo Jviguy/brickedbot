@@ -30,7 +30,8 @@ use serenity::{
     },
     prelude::*,
 };
-use serenity::builder::CreateApplicationCommandPermissions;
+use serenity::builder::{CreateApplicationCommandOption, CreateApplicationCommandPermissions};
+use serenity::model::guild::ActionRole::Create;
 use serenity::model::id::ChannelId;
 use serenity::model::interactions::application_command::ApplicationCommandPermissionType;
 use serenity::utils::Color;
@@ -76,8 +77,17 @@ impl EventHandler for Handler {
                         .default_permission(false)
                 })
                 .create_application_command(|command| {
-                    command.name("bulkdelete").description("Delete a heap of messages at once.")
+                    command.name("bulkdelete")
+                        .description("Delete a heap of messages at once.")
                         .default_permission(false)
+                        .create_option(|option| {
+                            option
+                                .name("amount")
+                                .description("The amount of messages to be deleted")
+                                .kind(ApplicationCommandOptionType::Integer)
+                                .min_int_value(2)
+                                .max_int_value(100)
+                        })
                 })
         }).await.expect("Failed to make slash commands! (fuck me if this happens)");
         guild.set_application_commands_permissions(&ctx.http, |permissions| {

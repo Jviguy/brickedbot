@@ -25,13 +25,13 @@ pub fn score(pin: i32) -> f32 {
         if (digit-previous).abs() < 3 {
             s *= 2.0;
         }
+        // The digit 0 adds complexity to codes based on its position in code prompts
+        else if digit == 0 {
+            s -= 0.5;
+        }
         // Lower digits are guessed first in most 10 digit code prompts or if theres a repeat of this digit somewhere in the pin.
         if digit < 5 || digits.binary_search(&digit).unwrap_or_else(|x| x) != idx {
             s += 0.5;
-        }
-        // The digit 0 adds complexity to codes based on its position in code prompts
-        if digit == 0 {
-            s -= 0.5;
         }
         previous = digit;
     }
