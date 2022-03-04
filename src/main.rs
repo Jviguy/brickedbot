@@ -72,7 +72,7 @@ impl EventHandler for Handler {
                 .create_application_command(|command| {
                     command.name("query").description("Returns information on a given server.")
                         .create_option(|option| {
-                            option.name("IP")
+                            option.name("ip")
                                 .description("The IP Address of the server to query.")
                                 .required(true)
                                 .kind(ApplicationCommandOptionType::String)
