@@ -1,1 +1,1 @@
-worker: ./target/release/brickedbot.exe
+worker: ls
