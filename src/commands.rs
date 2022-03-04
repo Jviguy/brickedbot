@@ -55,8 +55,8 @@ pub async fn mlrs(ctx: &Context, command: &ApplicationCommandInteraction) -> Opt
     let permissions = gc.permission_overwrites;
     let channel = command.channel_id.delete(&ctx.http).await.unwrap();
     let channel = command.guild_id.unwrap().create_channel(&ctx.http, |builder| {
-        if let Some(category) = channel.category() {
-            builder.category(category.id);
+        if let Some(category) = gc.category_id {
+            builder.category(category);
         };
         if let Some(topic) = gc.topic {
             builder.topic(topic);
