@@ -63,7 +63,7 @@ impl EventHandler for Handler {
                                                      , code = code, prec = 2 , score = score(code)))
                                 .footer(|footer| {
                                     footer
-                                        .text("Just in case you can always make a new code with /codegen!")
+                                        .text("Just in case, you can always make a new code with /codegen!")
                                 })
                                 .timestamp(chrono::offset::Utc::now())
                                 .thumbnail("https://cdn.discordapp.com/attachments/931763129136844820/949350466209337375/image-removebg-preview.png")
