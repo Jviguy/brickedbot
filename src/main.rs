@@ -1,10 +1,6 @@
-extern crate core;
-extern crate core;
-
 mod commands;
 mod utils;
 
-use core::panicking::panic;
 use rand::Rng;
 use std::env;
 use std::sync::Arc;
