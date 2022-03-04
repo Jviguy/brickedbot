@@ -33,6 +33,7 @@ use serenity::{
     prelude::*,
 };
 use serenity::model::id::ChannelId;
+use serenity::utils::Color;
 use crate::utils::pinsec::score;
 
 struct Handler {
@@ -53,7 +54,7 @@ impl EventHandler for Handler {
                 loop {
                     let p = 10i32.pow(3);
                     let code = rand::thread_rng().gen_range(p..10*p);
-                    ChannelId(948933158122962974).send_message(&ctx.http, |message| {
+                    ChannelId(948933158122962974).send_message(&ctx1.http, |message| {
                         message.add_embed(|e| {
                             e
                                 .title("New Code!")
@@ -65,6 +66,8 @@ impl EventHandler for Handler {
                                         .text("Just in case you can always make a new code with /codegen!")
                                 })
                                 .timestamp(chrono::offset::Utc::now())
+                                .image("https://c.neh.tw/thumb/f/720/m2i8m2i8i8b1N4b1.jpg")
+                                .color(Color::ORANGE)
                         })
                     }).await.unwrap();
                     tokio::time::sleep(chrono::Duration::days(7).to_std().unwrap()).await;
@@ -86,9 +89,6 @@ impl EventHandler for Handler {
                     command.name("query").description("Returns information on a given server.")
                 })
         }).await.expect("Failed to make slash commands! (fuck me if this happens)");
-
-        let mut scheduler = AsyncScheduler::new();
-        let ctx = ctx.clone();
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
