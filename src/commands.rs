@@ -16,7 +16,7 @@ pub async fn bulk_delete(ctx: &Context, command: &ApplicationCommandInteraction)
     if let ApplicationCommandInteractionDataOptionValue::Integer(amount) = option {
         let channel = guild.channels(&ctx.http).await.unwrap().get(&command.channel_id).unwrap().clone();
         let l = channel.last_message_id.unwrap();
-        channel.delete_messages(&ctx.http, (u64::from(l) - (*amount as u64)..= u64::from(l))
+        channel.delete_messages(&ctx.http, (u64::from(l)-(*amount as u64)..u64::from(l))
             .map(|w|MessageId(w)).collect::<Vec<MessageId>>()).await.unwrap();
         Some(String::from(format!("Successfully deleted {} messages!", amount)))
     } else {
