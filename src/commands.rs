@@ -49,11 +49,14 @@ pub async fn gencode(ctx: &Context, _: &ApplicationCommandInteraction) -> Option
 
 pub async fn query(ctx: &Context, command: &ApplicationCommandInteraction) -> Option<String> {
     let ipoption = command.data.options.get(0).unwrap().resolved.as_ref().unwrap();
-    let portoption = command.data.options.get(1).unwrap().resolved.as_ref().unwrap();
+    let mut port: u16 = 28015;
+    let portoption = command.data.options.get(1);
     if let ApplicationCommandInteractionDataOptionValue::String(ip) = ipoption {
-        let mut port: u16 = 28015;
-        if let ApplicationCommandInteractionDataOptionValue::Integer(p) = portoption {
-            port = *p as u16;
+        if let Some(portoptio) = portoption {
+            let portoption = portoptio.resolved.as_ref().unwrap();
+            if let ApplicationCommandInteractionDataOptionValue::Integer(p) = portoption {
+                port = *p as u16;
+            }
         }
         let res = source_query::info::query(format!("{}:{}", ip, port), None);
         match res {
