@@ -1,6 +1,7 @@
 extern crate core;
 
 mod commands;
+mod utils;
 
 use rand::Rng;
 use std::env;
@@ -31,6 +32,7 @@ use serenity::{
     prelude::*,
 };
 use serenity::model::id::ChannelId;
+use crate::utils::pinsec::score;
 
 struct Handler {
     is_loop_running: AtomicBool,
@@ -54,10 +56,11 @@ impl EventHandler for Handler {
                         message.add_embed(|e| {
                             e
                                 .title("New Code!")
-                                .description(format!("The new random code for this wipe is: ||{}||)", code))
+                                .description(format!("The new random code for this wipe is: ||{}||)\nThis code was rated with a {} guess-ability score! \
+                                (if this seems oddly high please run /reroll)", code, score(code)))
                         })
                     }).await.unwrap();
-                    tokio::time::sleep(Duration::from_secs(120)).await;
+                    tokio::time::sleep(chrono::Duration::days(7).to_std().unwrap()).await;
                 }
             });
             // Now that the loop is running, we set the bool to true
