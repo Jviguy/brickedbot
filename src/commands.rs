@@ -34,7 +34,7 @@ pub async fn bulk_delete(ctx: &Context, command: &ApplicationCommandInteraction)
     None
 }
 
-pub async fn gencode(ctx: &Context, command: &ApplicationCommandInteraction) -> Option<String> {
+pub async fn gencode(ctx: &Context, _: &ApplicationCommandInteraction) -> Option<String> {
     // let guild = Guild::get(&ctx.http, command.guild_id.unwrap()).await.unwrap();
     // let role = guild.roles.get(&RoleId(948938714464280587)).unwrap();
     // if command.user.has_role(&ctx.http, command.guild_id.unwrap(), role).await.unwrap() {
@@ -51,7 +51,11 @@ pub async fn query(ctx: &Context, command: &ApplicationCommandInteraction) -> Op
     let ipoption = command.data.options.get(0).unwrap().resolved.as_ref().unwrap();
     let portoption = command.data.options.get(1).unwrap().resolved.as_ref().unwrap();
     if let ApplicationCommandInteractionDataOptionValue::String(ip) = ipoption {
-        let res = source_query::info::query(ip, None);
+        let mut port: u16 = 28015;
+        if let ApplicationCommandInteractionDataOptionValue::Integer(p) = portoption {
+            port = *p as u16;
+        }
+        let res = source_query::info::query(format!("{}:{}", ip, port), None);
         match res {
             Ok(res) => {
                 command.create_interaction_response(&ctx.http, |response| {

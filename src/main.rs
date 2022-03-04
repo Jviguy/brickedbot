@@ -135,7 +135,7 @@ impl EventHandler for Handler {
                 "gencode" => commands::gencode(&ctx, &command).await,
                 "bulkdelete" => commands::bulk_delete(&ctx, &command).await,
                 "mlrs" => commands::mlrs(&ctx, &command).await,
-
+                "query" => commands::query(&ctx, &command).await,
                 _ => Some("unimplemented command".to_string())
             };
             match content {
