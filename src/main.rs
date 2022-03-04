@@ -83,12 +83,17 @@ impl EventHandler for Handler {
                         .create_option(|option| {
                             option
                                 .name("amount")
-                                .description("The amount of messages to be deleted")
+                                .description("The amount of messages to be deleted.")
                                 .kind(ApplicationCommandOptionType::Integer)
                                 .required(true)
                                 .min_int_value(2)
                                 .max_int_value(100)
                         })
+                })
+                .create_application_command(|command| {
+                    command.name("mlrs")
+                        .description("Mlrs rocket (nuke) the current channel.")
+                        .default_permission(false)
                 })
         }).await.expect("Failed to make slash commands! (fuck me if this happens)");
         guild.set_application_commands_permissions(&ctx.http, |permissions| {
@@ -97,10 +102,8 @@ impl EventHandler for Handler {
                     appcommand.id(u64::from(command.id));
                     appcommand.create_permissions(|permissions| {
                         let id: u64 = match &*command.name {
-                            "ping" => 949397569031786496,
-                            "query" => 949397569031786496,
-                            "gencode" => 948938714464280587,
-                            "bulkdelete" => 948938714464280587,
+                            "ping" | "query"  => 949397569031786496,
+                            "bulkdelete" | "mlrs" | "gencode"  => 948938714464280587,
                             _ => panic!("UNKNOWN COMMAND"),
                         };
                         permissions.id(id).permission(true).kind(ApplicationCommandPermissionType::Role)
@@ -117,7 +120,7 @@ impl EventHandler for Handler {
                 "ping" => Some("pong!".to_string()),
                 "gencode" => commands::gencode(&ctx, &command).await,
                 "bulkdelete" => commands::bulk_delete(&ctx, &command).await,
-
+                "mlrs" => commands::mlrs(&ctx, &command).await,
 
                 _ => Some("unimplemented command".to_string())
             };
