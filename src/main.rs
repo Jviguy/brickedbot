@@ -43,7 +43,7 @@ impl EventHandler for Handler {
 
 
 
-                _ => Some("cock".to_string())
+                _ => Some("unimplemented command".to_string())
             };
 
 
