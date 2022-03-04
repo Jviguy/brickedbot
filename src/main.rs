@@ -57,8 +57,8 @@ impl EventHandler for Handler {
                     ChannelId(948933158122962974).send_message(&ctx1.http, |message| {
                         message.add_embed(|e| {
                             e
-                                .title("New Code!")
-                                .description(format!("The new random code for this wipe is: ||{}||) \
+                                .title("Weekly Code Refresh!")
+                                .description(format!("The new random code for this week is: ||{}||) \
                                 \nThis code was rated with a **{score:.prec$}/10** guess-ability score! "
                                                      , code = code, prec = 2 , score = score(code)))
                                 .footer(|footer| {
@@ -66,7 +66,7 @@ impl EventHandler for Handler {
                                         .text("Just in case you can always make a new code with /codegen!")
                                 })
                                 .timestamp(chrono::offset::Utc::now())
-                                .image("https://c.neh.tw/thumb/f/720/m2i8m2i8i8b1N4b1.jpg")
+                                .thumbnail("https://c.neh.tw/thumb/f/720/m2i8m2i8i8b1N4b1.jpg")
                                 .color(Color::ORANGE)
                         })
                     }).await.unwrap();

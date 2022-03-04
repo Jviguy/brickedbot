@@ -13,15 +13,21 @@ pub fn score(pin: i32) -> f32 {
         .collect::<Vec<i32>>());
     let previous = 10;
     for digit in digits {
+        // A 4 digit pin grows exponentially easier to guess if theres many repeated digits
         if digit == previous {
             s *= 2.0;
         }
+        // Lower digits are guessed first in most 10 digit code prompts
         if digit < 5 {
             s += 0.2;
         }
+        // The digit 0 adds complexity to codes based on its position in code prompts
         if digit == 0 {
             s -= 0.5;
         }
+    }
+    if s > 10.0 {
+        s = 10.0;
     }
     s
 }
