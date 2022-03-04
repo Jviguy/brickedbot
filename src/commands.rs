@@ -5,7 +5,9 @@ use serenity::{
 };
 use serenity::model::guild::Guild;
 use serenity::model::id::{RoleId};
+use serenity::model::prelude::application_command::ApplicationCommandOptionType;
 use serenity::utils::{Color};
+use source_query::info::ServerType;
 use crate::gen;
 
 pub async fn bulk_delete(ctx: &Context, command: &ApplicationCommandInteraction) -> Option<String> {
@@ -46,6 +48,37 @@ pub async fn gencode(ctx: &Context, command: &ApplicationCommandInteraction) -> 
 }
 
 pub async fn query(ctx: &Context, command: &ApplicationCommandInteraction) -> Option<String> {
+    let ipoption = command.data.options.get(0).unwrap().resolved.as_ref().unwrap();
+    let portoption = command.data.options.get(1).unwrap().resolved.as_ref().unwrap();
+    if let ApplicationCommandInteractionDataOptionValue::String(ip) = ipoption {
+        let res = source_query::info::query(ip, None);
+        match res {
+            Ok(res) => {
+                command.create_interaction_response(&ctx.http, |response| {
+                    response.interaction_response_data(|data| {
+                        data.embed(|e| {
+                            e.title(res.name)
+                                .field("Players: ", format!("**{}/{}**",res.players, res.max_players), true)
+                                .field("Key Words: ", res.keywords.unwrap(), true)
+                                .field("Game: ", res.game , true)
+                                .color(Color::ORANGE)
+                        })
+                    })
+                }).await.unwrap();
+            }
+            Err(e) => {
+                command.create_interaction_response(&ctx.http, |response| {
+                    response.interaction_response_data(|data| {
+                        data.embed(|e| {
+                            e.title("Error!")
+                                .description("The server is either down or you inputted a invalid response!")
+                                .color(Color::ORANGE)
+                        })
+                    })
+                }).await.unwrap();
+            }
+        };
+    };
     None
 }
 

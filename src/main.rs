@@ -71,6 +71,20 @@ impl EventHandler for Handler {
                 })
                 .create_application_command(|command| {
                     command.name("query").description("Returns information on a given server.")
+                        .create_option(|option| {
+                            option.name("IP")
+                                .description("The IP Address of the server to query.")
+                                .required(true)
+                                .kind(ApplicationCommandOptionType::String)
+                                .create_sub_option(|suboption| {
+                                    suboption.kind(ApplicationCommandOptionType::Integer)
+                                        .name("port")
+                                        .description("The port of the server to query.")
+                                        .required(false)
+                                        .min_int_value(0)
+                                        .max_int_value(65535)
+                                })
+                        })
                 })
                 .create_application_command(|command| {
                     command.name("gencode").description("Generates a random code for this week.")
