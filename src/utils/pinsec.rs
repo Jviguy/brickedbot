@@ -54,7 +54,7 @@ pub async fn gen(http: Arc<Http>) {
                                  **{score:.prec$}/10** guess-ability score!", prec = 1, score=score(code)), false)
                 .footer(|footer| {
                     footer
-                        .text("Just in case, you can always make a new code with /codegen!")
+                        .text("Just in case, you can always make a new code with /gencode!")
                 })
                 .timestamp(chrono::offset::Utc::now())
                 .thumbnail("https://cdn.discordapp.com/attachments/931763129136844820/949350466209337375/image-removebg-preview.png")
