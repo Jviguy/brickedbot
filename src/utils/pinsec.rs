@@ -1,4 +1,10 @@
 use std::process::id;
+use std::sync::Arc;
+use rand::Rng;
+use serenity::client::Context;
+use serenity::http::Http;
+use serenity::model::prelude::ChannelId;
+use serenity::utils::Color;
 
 //A simple algorithm for determine the guess heurestic
 pub fn score(pin: i32) -> f32 {
@@ -34,4 +40,25 @@ pub fn score(pin: i32) -> f32 {
         s = 10.0;
     }
     s
+}
+
+pub async fn gen(http: Arc<Http>) {
+    let p = 10i32.pow(3);
+    let code = rand::thread_rng().gen_range(p..10*p);
+    ChannelId(948933158122962974).send_message(http, |message| {
+        message.add_embed(|e| {
+            e
+                .title("Weekly Code Refresh!")
+                .field("Code", format!("||{}||", code), false)
+                .field("Guess-Ability", format!("This code was rated with a \
+                                 **{score:.prec$}/10** guess-ability score!", prec = 1, score=score(code)), false)
+                .footer(|footer| {
+                    footer
+                        .text("Just in case, you can always make a new code with /codegen!")
+                })
+                .timestamp(chrono::offset::Utc::now())
+                .thumbnail("https://cdn.discordapp.com/attachments/931763129136844820/949350466209337375/image-removebg-preview.png")
+                .color(Color::ORANGE)
+        })
+    }).await.unwrap();
 }

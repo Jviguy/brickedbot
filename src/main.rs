@@ -34,7 +34,7 @@ use serenity::{
 };
 use serenity::model::id::ChannelId;
 use serenity::utils::Color;
-use crate::utils::pinsec::score;
+use crate::utils::pinsec::{gen, score};
 
 struct Handler {
     is_loop_running: AtomicBool,
@@ -52,24 +52,7 @@ impl EventHandler for Handler {
             // the application.
             tokio::spawn(async move {
                 loop {
-                    let p = 10i32.pow(3);
-                    let code = rand::thread_rng().gen_range(p..10*p);
-                    ChannelId(948933158122962974).send_message(&ctx1.http, |message| {
-                        message.add_embed(|e| {
-                            e
-                                .title("Weekly Code Refresh!")
-                                .field("Code", format!("||{}||", code), false)
-                                .field("Guess-Ability", format!("This code was rated with a \
-                                 **{score:.prec$}/10** guess-ability score!", prec = 1, score=score(code)), false)
-                                .footer(|footer| {
-                                    footer
-                                        .text("Just in case, you can always make a new code with /codegen!")
-                                })
-                                .timestamp(chrono::offset::Utc::now())
-                                .thumbnail("https://cdn.discordapp.com/attachments/931763129136844820/949350466209337375/image-removebg-preview.png")
-                                .color(Color::ORANGE)
-                        })
-                    }).await.unwrap();
+                    gen(ctx1.http.clone()).await;
                     tokio::time::sleep(chrono::Duration::days(7).to_std().unwrap()).await;
                 }
             });
@@ -83,10 +66,13 @@ impl EventHandler for Handler {
         guild.set_application_commands(&ctx.http, |commands| {
             commands
                 .create_application_command(|command| {
-                    command.name("ping").description("A ping command")
+                    command.name("ping").description("A ping command.")
                 })
                 .create_application_command(|command| {
                     command.name("query").description("Returns information on a given server.")
+                })
+                .create_application_command(|command| {
+                    command.name("gencode").description("Generates a random code for this week.")
                 })
         }).await.expect("Failed to make slash commands! (fuck me if this happens)");
     }
@@ -95,13 +81,12 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             let content = match command.data.name.as_str() {
                 "ping" => Some("pong!".to_string()),
-
+                "gencode" => commands::gencode(&ctx, &command).await,
+                "bulkdelete" => commands::bulk_delete(&ctx, &command).await,
 
 
                 _ => Some("unimplemented command".to_string())
             };
-
-
             match content {
                 None => {}
                 Some(content) => {
