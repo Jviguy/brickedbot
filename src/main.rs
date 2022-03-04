@@ -56,8 +56,9 @@ impl EventHandler for Handler {
                         message.add_embed(|e| {
                             e
                                 .title("New Code!")
-                                .description(format!("The new random code for this wipe is: ||{}||)\nThis code was rated with a {} guess-ability score! \
-                                (if this seems oddly high please run /reroll)", code, score(code)))
+                                .description(format!("The new random code for this wipe is: ||{}||) \
+                                \nThis code was rated with a **{score:.prec$}/10** guess-ability score! \
+                                \n(To manually generate a new code /codegen!)", code = code, prec = 2 , score = score(code)))
                         })
                     }).await.unwrap();
                     tokio::time::sleep(chrono::Duration::days(7).to_std().unwrap()).await;
