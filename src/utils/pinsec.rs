@@ -1,9 +1,11 @@
+use std::io::{Error, ErrorKind};
 use std::sync::Arc;
 use rand::Rng;
 use serenity::http::Http;
 use serenity::model::id::GuildId;
 use serenity::model::prelude::ChannelId;
 use serenity::utils::Color;
+use crate::utils::find_channel;
 
 //A simple algorithm for determine the guess heurestic
 pub fn score(pin: i32) -> f32 {
@@ -40,29 +42,29 @@ pub fn score(pin: i32) -> f32 {
     s
 }
 
-pub async fn gen(http: Arc<Http>) {
+pub async fn gen(http: Arc<Http>) -> std::io::Result<()> {
     let p = 10i32.pow(3);
     let code = rand::thread_rng().gen_range(p..10*p);
-    let mut channel = ChannelId(949424569834438707);
-    for (id,gc) in GuildId(948931516031959062).channels(http.clone()).await.unwrap() {
-        if gc.name == "code" {
-            channel = id;
-        }
-    };
-    channel.send_message(http, |message| {
-        message.add_embed(|e| {
-            e
-                .title("Weekly Code Refresh!")
-                .field("Code", format!("||{}||", code), false)
-                .field("Guess-Ability", format!("This code was rated with a \
-                                 **{score:.prec$}/10** guess-ability score!", prec = 1, score=score(code)), false)
-                .footer(|footer| {
-                    footer
-                        .text("Just in case, you can always make a new code with /gencode!")
-                })
-                .timestamp(chrono::offset::Utc::now())
-                .thumbnail("https://cdn.discordapp.com/attachments/931763129136844820/949350466209337375/image-removebg-preview.png")
-                .color(Color::ORANGE)
-        })
-    }).await.unwrap();
+    let op = find_channel(http.clone(), GuildId(948931516031959062), String::from("code")).await;
+    if let Some((channel, gc)) = op {
+        channel.send_message(http.clone(), |message| {
+            message.add_embed(|e| {
+                e
+                    .title("Weekly Code Refresh!")
+                    .field("Code", format!("||{}||", code), false)
+                    .field("Guess-Ability", format!("This code was rated with a \
+                                 **{score:.prec$}/10** guess-ability score!", prec = 1, score = score(code)), false)
+                    .footer(|footer| {
+                        footer
+                            .text("Just in case, you can always make a new code with /gencode!")
+                    })
+                    .timestamp(chrono::offset::Utc::now())
+                    .thumbnail("https://cdn.discordapp.com/attachments/931763129136844820/949350466209337375/image-removebg-preview.png")
+                    .color(Color::ORANGE)
+            })
+        }).await.unwrap();
+        Ok(())
+    } else {
+        Err(Error::new(ErrorKind::NotFound, "#code channel couldn't be found!"))
+    }
 }

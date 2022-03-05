@@ -1,41 +1,25 @@
-mod commands;
-mod utils;
-
-use rand::Rng;
 use std::env;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use chrono::*;
-// Scheduler, and trait for .seconds(), .minutes(), etc.
-use clokwerk::{AsyncScheduler, TimeUnits};
-// Import week days and WeekDay
-use clokwerk::Interval::*;
-use std::thread;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use chrono::format::Numeric::Timestamp;
-use chrono::Weekday::Fri;
-
 use serenity::{
     async_trait,
     model::{
-        gateway::{Ready},
+        gateway::Ready,
         id::GuildId,
         interactions::{
-            application_command::{
-                ApplicationCommandOptionType,
-            },
+            application_command::ApplicationCommandOptionType,
             Interaction,
             InteractionResponseType,
         },
     },
     prelude::*,
 };
-use serenity::builder::{CreateApplicationCommandOption, CreateApplicationCommandPermissions};
-use serenity::model::guild::ActionRole::Create;
-use serenity::model::id::ChannelId;
-use serenity::model::interactions::application_command::ApplicationCommandPermissionType;
+use serenity::model::guild::{Member};
+use serenity::model::interactions::application_command::{ApplicationCommandPermissionType};
 use serenity::utils::Color;
-use crate::utils::pinsec::{gen, score};
+use crate::utils::pinsec::{gen};
+mod commands;
+mod utils;
 
 struct Handler {
     is_loop_running: AtomicBool,
@@ -53,12 +37,29 @@ impl EventHandler for Handler {
             // the application.
             tokio::spawn(async move {
                 loop {
-                    gen(ctx1.http.clone()).await;
+                    gen(ctx1.http.clone()).await.expect("Code channel has been deleted!");
                     tokio::time::sleep(chrono::Duration::days(7).to_std().unwrap()).await;
                 }
             });
             // Now that the loop is running, we set the bool to true
             self.is_loop_running.swap(true, Ordering::Relaxed);
+        }
+    }
+
+    async fn guild_member_addition(&self, ctx: Context, guild_id: GuildId, new_member: Member) {
+        if let Some(channel) = guild_id.to_guild_cached(&ctx.cache).await.unwrap().channel_id_from_name(&ctx.cache, "welcome").await {
+            channel.send_message(&ctx.http, |message| {
+                message.embed(|e| {
+                    e
+                        .title(format!("Welcome {}!", new_member.mention().to_string()))
+                        .footer(|f| f.text("We hope you enjoy your stay!"))
+                        .timestamp(chrono::offset::Utc::now())
+                        .color(Color::ORANGE)
+                })
+            }).await.unwrap();
+        } else {
+            guild_id.to_guild_cached(&ctx.cache).await.unwrap().system_channel_id.unwrap()
+                .send_message(&ctx.http, |f| f.content("Failed to find welcome channel!")).await.unwrap();
         }
     }
 
@@ -160,7 +161,7 @@ impl EventHandler for Handler {
 #[tokio::main]
 async fn main() {
     // Configure the client with your Discord bot token in the environment.
-    let token = env::var("TOKEN").expect("Expected a token in the environment");;
+    let token = env::var("TOKEN").expect("Expected a token in the environment");
 
     // The Application Id is usually the Bot User Id.
     let application_id: u64 = 949139214363131924;
