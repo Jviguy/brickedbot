@@ -1,23 +1,14 @@
-use std::env;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use crate::utils::pinsec::gen;
+use serenity::all::{CreateEmbed, CreateEmbedFooter, CreateMessage};
+use serenity::model::guild::Member;
 use serenity::{
     async_trait,
-    model::{
-        gateway::Ready,
-        id::GuildId,
-        interactions::{
-            application_command::ApplicationCommandOptionType,
-            Interaction,
-            InteractionResponseType,
-        },
-    },
+    model::{gateway::Ready, id::GuildId},
     prelude::*,
 };
-use serenity::model::guild::{Member};
-use serenity::model::interactions::application_command::{ApplicationCommandPermissionType};
-use serenity::utils::Color;
-use crate::utils::pinsec::{gen};
+use std::env;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 mod commands;
 mod utils;
 
@@ -27,7 +18,6 @@ struct Handler {
 
 #[async_trait]
 impl EventHandler for Handler {
-
     async fn cache_ready(&self, ctx: Context, _guilds: Vec<GuildId>) {
         let ctx = Arc::new(ctx);
         if !self.is_loop_running.load(Ordering::Relaxed) {
@@ -37,7 +27,9 @@ impl EventHandler for Handler {
             // the application.
             tokio::spawn(async move {
                 loop {
-                    gen(ctx1.http.clone()).await.expect("Code channel has been deleted!");
+                    gen(ctx1.http.clone())
+                        .await
+                        .expect("Code channel has been deleted!");
                     tokio::time::sleep(chrono::Duration::days(7).to_std().unwrap()).await;
                 }
             });
@@ -46,87 +38,121 @@ impl EventHandler for Handler {
         }
     }
 
-    async fn guild_member_addition(&self, ctx: Context, guild_id: GuildId, new_member: Member) {
-        if let Some(channel) = guild_id.to_guild_cached(&ctx.cache).await.unwrap().channel_id_from_name(&ctx.cache, "welcome").await {
-            channel.send_message(&ctx.http, |message| {
-                message.embed(|e| {
-                    e
-                        .title(format!("Welcome {}!", new_member.mention().to_string()))
-                        .footer(|f| f.text("We hope you enjoy your stay!"))
-                        .timestamp(chrono::offset::Utc::now())
-                        .color(Color::ORANGE)
-                })
-            }).await.unwrap();
+    async fn guild_member_addition(&self, ctx: Context, new_member: Member) {
+        let guild_id = new_member.guild_id;
+        if let Some((_id, channel)) = guild_id
+            .to_guild_cached(&ctx.cache)
+            .unwrap()
+            .channels(ctx.http)
+            .await
+            .unwrap()
+            .iter()
+            .find(|(id, ch)| ch.name() == "welcome")
+        {
+            let mut message = CreateMessage::new().embed(
+                CreateEmbed::new()
+                    .title(format!("Welcome {}!", new_member.mention().to_string()))
+                    .footer(CreateEmbedFooter::new("We hope you enjoy your stay!"))
+                    .timestamp(chrono::offset::Utc::now())
+                    .color(Color::ORANGE),
+            );
+            channel.send_message(&ctx.http, message).await.unwrap();
         } else {
-            guild_id.to_guild_cached(&ctx.cache).await.unwrap().system_channel_id.unwrap()
-                .send_message(&ctx.http, |f| f.content("Failed to find welcome channel!")).await.unwrap();
+            guild_id
+                .to_guild_cached(&ctx.cache)
+                .unwrap()
+                .system_channel_id
+                .unwrap()
+                .send_message(
+                    &ctx.http,
+                    CreateMessage::new().content("Failed to find welcome channel!"),
+                )
+                .await
+                .unwrap();
         }
     }
 
     async fn ready(&self, ctx: Context, _: Ready) {
-        let guild = GuildId(948931516031959062);
-        let commands = guild.set_application_commands(&ctx.http, |commands| {
-            commands
-                .create_application_command(|command| {
-                    command.name("ping").description("A ping command.")
-                })
-                .create_application_command(|command| {
-                    command.name("query").description("Returns information on a given server.")
-                        .create_option(|option| {
-                            option.name("ip")
-                                .description("The IP Address of the server to query.")
-                                .required(true)
-                                .kind(ApplicationCommandOptionType::String)
-                                })
-                        .create_option(|option| {
-                            option.kind(ApplicationCommandOptionType::Integer)
-                                .name("port")
-                                .description("The port of the server to query.")
-                                .required(false)
-                                .min_int_value(0)
-                                .max_int_value(65535)
-                        })
-                })
-                .create_application_command(|command| {
-                    command.name("gencode").description("Generates a random code for this week.")
-                        .default_permission(false)
-                })
-                .create_application_command(|command| {
-                    command.name("bulkdelete")
-                        .description("Delete a heap of messages at once.")
-                        .default_permission(false)
-                        .create_option(|option| {
-                            option
-                                .name("amount")
-                                .description("The amount of messages to be deleted.")
-                                .kind(ApplicationCommandOptionType::Integer)
-                                .required(true)
-                                .min_int_value(2)
-                                .max_int_value(100)
-                        })
-                })
-                .create_application_command(|command| {
-                    command.name("mlrs")
-                        .description("Mlrs rocket (nuke) the current channel.")
-                        .default_permission(false)
-                })
-        }).await.expect("Failed to make slash commands! (fuck me if this happens)");
-        guild.set_application_commands_permissions(&ctx.http, |permissions| {
-            for command in commands {
-                permissions.create_application_command(|appcommand| {
-                    appcommand.id(u64::from(command.id));
-                    appcommand.create_permissions(|permissions| {
-                        let id: u64 = match &*command.name {
-                            "ping" | "query"  => 949397569031786496,
-                            "bulkdelete" | "mlrs" | "gencode"  => 948938714464280587,
-                            _ => panic!("UNKNOWN COMMAND"),
-                        };
-                        permissions.id(id).permission(true).kind(ApplicationCommandPermissionType::Role)
+        let guild = GuildId::new(948931516031959062);
+        let commands = guild
+            .set_application_commands(&ctx.http, |commands| {
+                commands
+                    .create_application_command(|command| {
+                        command.name("ping").description("A ping command.")
                     })
-                });
-            }
-            permissions
-        }).await.expect("Failed to set permissions!");
+                    .create_application_command(|command| {
+                        command
+                            .name("query")
+                            .description("Returns information on a given server.")
+                            .create_option(|option| {
+                                option
+                                    .name("ip")
+                                    .description("The IP Address of the server to query.")
+                                    .required(true)
+                                    .kind(ApplicationCommandOptionType::String)
+                            })
+                            .create_option(|option| {
+                                option
+                                    .kind(ApplicationCommandOptionType::Integer)
+                                    .name("port")
+                                    .description("The port of the server to query.")
+                                    .required(false)
+                                    .min_int_value(0)
+                                    .max_int_value(65535)
+                            })
+                    })
+                    .create_application_command(|command| {
+                        command
+                            .name("gencode")
+                            .description("Generates a random code for this week.")
+                            .default_permission(false)
+                    })
+                    .create_application_command(|command| {
+                        command
+                            .name("bulkdelete")
+                            .description("Delete a heap of messages at once.")
+                            .default_permission(false)
+                            .create_option(|option| {
+                                option
+                                    .name("amount")
+                                    .description("The amount of messages to be deleted.")
+                                    .kind(ApplicationCommandOptionType::Integer)
+                                    .required(true)
+                                    .min_int_value(2)
+                                    .max_int_value(100)
+                            })
+                    })
+                    .create_application_command(|command| {
+                        command
+                            .name("mlrs")
+                            .description("Mlrs rocket (nuke) the current channel.")
+                            .default_permission(false)
+                    })
+            })
+            .await
+            .expect("Failed to make slash commands! (fuck me if this happens)");
+        guild
+            .set_application_commands_permissions(&ctx.http, |permissions| {
+                for command in commands {
+                    permissions.create_application_command(|appcommand| {
+                        appcommand.id(u64::from(command.id));
+                        appcommand.create_permissions(|permissions| {
+                            let id: u64 = match &*command.name {
+                                "ping" | "query" => 949397569031786496,
+                                "bulkdelete" | "mlrs" | "gencode" => 948938714464280587,
+                                _ => panic!("UNKNOWN COMMAND"),
+                            };
+                            permissions
+                                .id(id)
+                                .permission(true)
+                                .kind(ApplicationCommandPermissionType::Role)
+                        })
+                    });
+                }
+                permissions
+            })
+            .await
+            .expect("Failed to set permissions!");
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
@@ -137,7 +163,7 @@ impl EventHandler for Handler {
                 "bulkdelete" => commands::bulk_delete(&ctx, &command).await,
                 "mlrs" => commands::mlrs(&ctx, &command).await,
                 "query" => commands::query(&ctx, &command).await,
-                _ => Some("unimplemented command".to_string())
+                _ => Some("unimplemented command".to_string()),
             };
             match content {
                 None => {}
